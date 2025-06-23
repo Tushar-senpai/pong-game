@@ -3,55 +3,81 @@ const leftPaddle = document.querySelector(".paddle.left");
 const rightPaddle = document.querySelector(".paddle.right");
 const ball = document.querySelector(".ball");
 
+const startBtn = document.getElementById("startBtn");
+const resetBtn = document.getElementById("resetBtn");
+const playerScoreEl = document.getElementById("playerScore");
+const aiScoreEl = document.getElementById("aiScore");
+
 const gameWidth = 800;
 const gameHeight = 500;
 
-let ballX = gameWidth / 2;
-let ballY = gameHeight / 2;
-let ballSpeedX = 5;
-let ballSpeedY = 3;
+let ballX, ballY, ballSpeedX, ballSpeedY;
+let leftPaddleY, rightPaddleY;
+let playerScore = 0, aiScore = 0;
+let isRunning = false;
 
-let leftPaddleY = gameHeight / 2 - 50;
-let rightPaddleY = gameHeight / 2 - 50;
+function resetGame() {
+  ballX = gameWidth / 2;
+  ballY = gameHeight / 2;
+  ballSpeedX = Math.random() < 0.5 ? 5 : -5;
+  ballSpeedY = (Math.random() * 4 + 2) * (Math.random() < 0.5 ? 1 : -1);
+  leftPaddleY = gameHeight / 2 - 50;
+  rightPaddleY = gameHeight / 2 - 50;
+  updateUI();
+}
 
-function update() {
-  // Move ball
+function updateUI() {
+  ball.style.left = `${ballX}px`;
+  ball.style.top = `${ballY}px`;
+  leftPaddle.style.top = `${leftPaddleY}px`;
+  rightPaddle.style.top = `${rightPaddleY}px`;
+  playerScoreEl.textContent = playerScore;
+  aiScoreEl.textContent = aiScore;
+}
+
+function updateGame() {
+  if (!isRunning) return;
+
   ballX += ballSpeedX;
   ballY += ballSpeedY;
 
-  // Ball collision with top/bottom
+  // Bounce off top/bottom
   if (ballY <= 0 || ballY + 15 >= gameHeight) {
     ballSpeedY *= -1;
   }
 
-  // Ball collision with left paddle
+  // Collision with left paddle
   if (
     ballX <= 10 &&
     ballY + 15 >= leftPaddleY &&
     ballY <= leftPaddleY + 100
   ) {
     ballSpeedX *= -1;
-    ballX = 10; // Avoid sticking
+    ballX = 10;
   }
 
-  // Ball collision with right paddle
+  // Collision with right paddle
   if (
     ballX + 15 >= gameWidth - 10 &&
     ballY + 15 >= rightPaddleY &&
     ballY <= rightPaddleY + 100
   ) {
     ballSpeedX *= -1;
-    ballX = gameWidth - 25; // Avoid sticking
+    ballX = gameWidth - 25;
   }
 
-  // Ball reset if it goes out of bounds
-  if (ballX < 0 || ballX > gameWidth) {
-    ballX = gameWidth / 2;
-    ballY = gameHeight / 2;
-    ballSpeedX = -ballSpeedX;
+  // Score tracking
+  if (ballX < 0) {
+    aiScore++;
+    resetGame();
   }
 
-  // Simple AI for right paddle
+  if (ballX > gameWidth) {
+    playerScore++;
+    resetGame();
+  }
+
+  // AI movement
   if (rightPaddleY + 50 < ballY) rightPaddleY += 3;
   else if (rightPaddleY + 50 > ballY) rightPaddleY -= 3;
 
@@ -59,14 +85,8 @@ function update() {
   leftPaddleY = Math.max(0, Math.min(gameHeight - 100, leftPaddleY));
   rightPaddleY = Math.max(0, Math.min(gameHeight - 100, rightPaddleY));
 
-  // Update DOM
-  ball.style.left = ballX + "px";
-  ball.style.top = ballY + "px";
-
-  leftPaddle.style.top = leftPaddleY + "px";
-  rightPaddle.style.top = rightPaddleY + "px";
-
-  requestAnimationFrame(update);
+  updateUI();
+  requestAnimationFrame(updateGame);
 }
 
 game.addEventListener("mousemove", (e) => {
@@ -74,5 +94,18 @@ game.addEventListener("mousemove", (e) => {
   leftPaddleY = e.clientY - rect.top - 50;
 });
 
-update();
+startBtn.addEventListener("click", () => {
+  if (!isRunning) {
+    isRunning = true;
+    updateGame();
+  }
+});
 
+resetBtn.addEventListener("click", () => {
+  playerScore = 0;
+  aiScore = 0;
+  isRunning = false;
+  resetGame();
+});
+
+resetGame(); // Initialize
