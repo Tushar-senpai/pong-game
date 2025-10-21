@@ -34,8 +34,10 @@ body {
 
 .game {
   position: relative;
-  width: 800px;
-  height: 500px;
+  width: 80vw;
+  max-width: 900px;
+  height: calc(80vw * 0.625); /* maintain 800x500 ratio */
+  max-height: 600px;
   background: #111;
   overflow: hidden;
   border: 3px solid white;
@@ -62,4 +64,29 @@ body {
   height: 15px;
   background: white;
   border-radius: 50%;
+}
+
+/* center dashed line */
+.game::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 100%;
+  background-image: linear-gradient(#fff 30%, rgba(0,0,0,0) 0%);
+  background-size: 4px 20px;
+  opacity: 0.2;
+}
+
+.controls select {
+  padding: 8px;
+  border-radius: 5px;
+  margin-left: 6px;
+}
+
+.instructions {
+  margin-top: 8px;
+  color: #ddd;
 }
